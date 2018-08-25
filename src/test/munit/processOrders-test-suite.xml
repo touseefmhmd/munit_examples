@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+    <munit:config name="munit" doc:name="MUnit configuration"/>
+    <spring:beans>
+        <spring:import resource="classpath:order-system.xml"/>
+    </spring:beans>
+    <munit:test name="processOrders_payloadReturnsTwoElementsOfMap_True" description="Calling ProcessOrdes Flow will return payload containing two objects of type Java Map">
+        <munit:set payload="#[[{'orderID':444,'location':'worldwide','price':44.04},{'orderID':555,'location':'worldwide','price':55.05},{'orderID':333,'location':'national','price':33.03}]]" doc:name="Set Message: Set payload to both International &amp; Domestic Orders"/>
+        <flow-ref name="processOrders" doc:name="processOrders"/>
+        <munit:assert-true message="Expected payload's dataType to be Java.Map, but found #[payload.getClass().getName()] instead!" condition="#[payload is java.util.Map]" doc:name="Assert True: Verify that payload Type is Java Map"/>
+        <munit:assert-on-equals message="FAILED: Expected payload to have 2 key/value Pairs but found #[payload.size()] instead!" expectedValue="#[2]" actualValue="#[payload.size()]" doc:name="Assert Equals: Payload contains 2 key/Value pairs"/>
+    </munit:test>
+    <munit:test name="processOrders_internationalKeyContainsWorldwideOrders_True" description="Calling processOrders flow returns payload containing worlwide orders when key is International">
+        <munit:set payload="#[[{'orderID':444,'location':'worldwide','price':44.04},{'orderID':555,'location':'worldwide','price':55.05}]]" doc:name="Set Message: Set payload to international orders only"/>
+        <flow-ref name="processOrders" doc:name="processOrders"/>
+        <munit:assert-true message="FAILED: International key has no rows" condition="#[payload.'international'.size() &gt; 0]" doc:name="Assert True: International key has some rows"/>
+    </munit:test>
+</mule>
