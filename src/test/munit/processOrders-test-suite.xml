@@ -17,5 +17,16 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
         <munit:set payload="#[[{'orderID':444,'location':'worldwide','price':44.04},{'orderID':555,'location':'worldwide','price':55.05}]]" doc:name="Set Message: Set payload to international orders only"/>
         <flow-ref name="processOrders" doc:name="processOrders"/>
         <munit:assert-true message="FAILED: International key has no rows" condition="#[payload.'international'.size() &gt; 0]" doc:name="Assert True: International key has some rows"/>
+        <foreach collection="#[payload.'international']" doc:name="For Each: row in international key">
+            <munit:assert-on-equals message="FAILED: Expected location to be Worldwide, but found #[payload.'location'] instead!" expectedValue="#['worldwide']" actualValue="#[payload.'location']" doc:name="Assert Equals: Location is equal to Worldwide"/>
+        </foreach>
+    </munit:test>
+    <munit:test name="processOrders_domesticKeyContainsNationalOrders_True" description="Calling processOrders flow returns payload containing national orders when key is Domestic">
+        <munit:set payload="#[[{'orderID':444,'location':'worldwide','price':44.04},{'orderID':555,'location':'worldwide','price':55.05},{'orderID':333,'location':'national','price':33.03}]]" doc:name="Set Message: Set payload to all orders"/>
+        <flow-ref name="processOrders" doc:name="processOrders"/>
+        <munit:assert-true message="FAILED: Domestic key has no rows" condition="#[payload.'domestic'.size() &gt; 0]" doc:name="Assert True: Domestic key has some rows"/>
+        <foreach collection="#[payload.'domestic']" doc:name="For Each: row in domestic key">
+            <munit:assert-on-equals message="FAILED: Expected location to be National, but found #[payload.'location'] instead!" expectedValue="#['national']" actualValue="#[payload.'location']" doc:name="Assert Equals: Location is equal to National"/>
+        </foreach>
     </munit:test>
 </mule>
